@@ -36,3 +36,38 @@ services:
       KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
     depends_on:
       - zoo1
+
+  postgres:
+    image: postgres:13
+    container_name: api_db
+    environment:
+      POSTGRES_DB: users_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: P3l4m3-3st4
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: users_api
+    environment:
+      DB_NAME: users_db
+      DB_USER: admin
+      DB_PASSWORD: P3l4m3-3st4
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+
+volumes:
+  postgres_data:
