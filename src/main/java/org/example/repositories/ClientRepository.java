@@ -1,6 +1,5 @@
 package org.example.repositories;
 
-import com.sun.istack.internal.NotNull;
 import org.example.models.Client;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
@@ -8,8 +7,8 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -23,17 +22,19 @@ public class ClientRepository {
     private final RowMapper<Client> clientRowMapper = (rs, rowNum) ->
             new Client(
                     rs.getLong("id"),
+                    rs.getInt("particular_id"),
                     rs.getString("nombre"),
                     rs.getString("apellido"),
                     rs.getDate("fecha_nacimiento").toLocalDate(),
                     rs.getTimestamp("fecha_creacion").toLocalDateTime(),
+                    rs.getBoolean("activo"),
                     rs.getLong("owner_id")
             );
 
     // CREATE
     public Client save(Client client) {
         String sql = "INSERT INTO clients (nombre, apellido, fecha_nacimiento, owner_id)" +
-                     "VALUES (:nombre, :apellido, :fecha_nacimiento, :owner_id) RETURNING id";
+                     "VALUES (:nombre, :apellido, :fecha_nacimiento, :owner_id) RETURNING id, particular_id";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("nombre", client.getNombre());
@@ -41,8 +42,12 @@ public class ClientRepository {
         params.addValue("fecha_nacimiento", client.getFechaNacimiento());
         params.addValue("owner_id", client.getOwnerId());
 
-        Long generatedId = jdbcTemplate.queryForObject(sql, params, Long.class);
+                    // Object porq un campo es int el otro long
+        Map<String, Object> result = jdbcTemplate.queryForMap(sql, params);
+        Long generatedId = (Long) result.get("id");
+        Integer particularId = (Integer) result.get("particular_id");
         client.setId(generatedId);
+        client.setParticularId(particularId);
         return client;
     }
 
@@ -62,12 +67,12 @@ public class ClientRepository {
 
     // READ ALL BY OWNER
     public List<Client> findAllByOwnerId(Long ownerId) {
-        String sql = "SELECT * FROM clients WHERE owner_id = :ownerId";
+        String sql = "SELECT * FROM clients WHERE owner_id = :ownerId AND activo = true";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("ownerId", ownerId);
 
-        return jdbcTemplate.query(sql, Collections.emptyMap(), clientRowMapper);
+        return jdbcTemplate.query(sql, params, clientRowMapper);
     }
 
 
@@ -89,9 +94,9 @@ public class ClientRepository {
         return client;
     }
 
-    // DELETE
+    // DELETE (BAJA LÓGICA)
     public boolean deleteById(Long id) {
-        String sql = "DELETE FROM clients WHERE id = :id";
+        String sql = "UPDATE clients SET activo = false WHERE id = :id";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("id", id);
@@ -105,7 +110,7 @@ public class ClientRepository {
 
     // EXIST
     public boolean existsById(Long id) {
-        String sql = "SELECT COUNT(*) FROM clients WHERE id = :id";
+        String sql = "SELECT COUNT(*) FROM clients WHERE id = :id AND activo = true";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("id", id);

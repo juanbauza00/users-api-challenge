@@ -12,9 +12,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class Client {
     private Long id;
+    private Integer particularId;
     private String nombre;
     private String apellido;
     private LocalDate fechaNacimiento;
     private LocalDateTime fechaCreacion;
+    private Boolean activo;
     private Long ownerId;
 }
