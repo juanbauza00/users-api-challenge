@@ -67,7 +67,7 @@ public class ClientRepository {
 
     // READ ALL BY OWNER
     public List<Client> findAllByOwnerId(Long ownerId) {
-        String sql = "SELECT * FROM clients WHERE owner_id = :ownerId AND activo = true";
+        String sql = "SELECT * FROM clients WHERE owner_id = :ownerId AND activo = true ORDER BY particular_id ASC";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("ownerId", ownerId);
