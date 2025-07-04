@@ -52,10 +52,11 @@ public class ClientRepository {
     }
 
     // READ ONE
-    public Optional<Client> findById(Long id) {
-        String sql = "SELECT * FROM clients WHERE id = :id";
+    public Optional<Client> findByOwnerParticularId(Long ownerId, int particularId) {
+        String sql = "SELECT * FROM clients WHERE particular_id = :particularId AND owner_id = :ownerId";
         MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("id", id);
+        params.addValue("particular_id", particularId);
+        params.addValue("owner_id", ownerId);
 
         try{
             Client client = jdbcTemplate.queryForObject(sql, params, clientRowMapper);
@@ -108,14 +109,18 @@ public class ClientRepository {
         return true;
     }
 
-    // EXIST
-    public boolean existsById(Long id) {
-        String sql = "SELECT COUNT(*) FROM clients WHERE id = :id AND activo = true";
+    public Optional<Long> getClientId(Long ownerId, int particularId) {
+        String sql = "SELECT id FROM clients WHERE particular_id = :particularId AND owner_id = :ownerId AND activo = true";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("id", id);
+        params.addValue("particularId", particularId);
+        params.addValue("ownerId", ownerId);
 
-        Integer count = jdbcTemplate.queryForObject(sql, params, Integer.class);
-        return count != null && count > 0;
+        try {
+            Long id = jdbcTemplate.queryForObject(sql, params, Long.class);
+            return Optional.of(id);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 }

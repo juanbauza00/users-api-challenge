@@ -13,20 +13,17 @@ public interface ClientService {
     List<Client> createClientBatch(List<Client> clients, Long ownerId);
 
     // GET ONE
-    Client getClientById(Long id);
+    Client getClientByOwnerParticularId(Integer particularId, Long ownerId);
 
     // GET ALL BY OWNER ID
     List<Client> getClientsByOwnerId(Long ownerId);
 
-    Client updateClient(Client client);
+    // UPDATE
+    Client updateClient(Integer particularId, Long ownerId, Client clientData);
 
-    Boolean deleteClientById(Long id);
+    // DELETE
+    boolean deleteClient(Integer particularId, Long ownerId);
 
-    Boolean existById(Long id);
-
-    Boolean clientBelongsToOwner(Client client, Long ownerId);
-
-
-
-
+    // EXIST
+    boolean existsByParticularIdAndOwnerId(Integer particularId, Long ownerId);
 }
