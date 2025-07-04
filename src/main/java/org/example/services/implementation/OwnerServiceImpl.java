@@ -5,7 +5,6 @@ import org.example.repositories.OwnerRepository;
 import org.example.services.interfaces.OwnerService;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -17,33 +16,59 @@ public class OwnerServiceImpl implements OwnerService {
         this.ownerRepository = ownerRepository;
     }
 
+    private void validateOwner(Owner owner) {
+        if (owner == null) {
+            throw new IllegalArgumentException("Los datos del owner no pueden ser nulos");
+        }
+        if (owner.getNombre() == null || owner.getNombre().trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre del owner es obligatorio");
+        }
+        if (owner.getNombre().trim().length() > 255) {
+            throw new IllegalArgumentException("El nombre del owner no puede exceder 255 caracteres");
+        }
+    }
+
+    private void validateOwnerId(Long id){
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("El id debe ser un numero positivo");
+        }
+    }
+
     @Override
     public Owner createOwner(Owner owner) {
-        return null;
+        validateOwner(owner);
+        return ownerRepository.save(owner);
     }
 
     @Override
     public Owner getOwnerById(Long id) {
-        return null;
+        validateOwnerId(id);
+        return ownerRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("No existe el owner con id: " + id));
     }
 
     @Override
     public List<Owner> getAllOwners() {
-        return Collections.emptyList();
+        return ownerRepository.findAll();
     }
 
     @Override
     public Owner updateOwner(Long id, Owner ownerData) {
-        return null;
+        validateOwnerId(id);
+        validateOwner(ownerData);
+        ownerData.setId(id);
+        return ownerRepository.update(ownerData);
     }
 
     @Override
     public boolean deleteOwner(Long id) {
-        return false;
+        validateOwnerId(id);
+        return ownerRepository.deleteById(id);
     }
 
     @Override
     public boolean existsById(Long id) {
-        return false;
+        validateOwnerId(id);
+        return ownerRepository.existsById(id);
     }
 }
