@@ -15,6 +15,9 @@ public interface ClientService {
     // GET ONE
     Client getClientByOwnerParticularId(Integer particularId, Long ownerId);
 
+    // GET PARTICULAR ID
+    Integer getParticularIdByClientId(Long clientId);
+
     // GET ALL BY OWNER ID
     List<Client> getClientsByOwnerId(Long ownerId);
 

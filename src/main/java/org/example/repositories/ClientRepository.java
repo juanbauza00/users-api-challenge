@@ -66,6 +66,14 @@ public class ClientRepository {
         }
     }
 
+    // READ PARTICULAR ID BY ID
+    public Integer getParticularIdByClientId(Long clientId) {
+        String sql = "SELECT particular_id FROM clients WHERE id = :clientId";
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("clientId", clientId);
+        return jdbcTemplate.queryForObject(sql, params, Integer.class);
+    }
+
     // READ ALL BY OWNER
     public List<Client> findAllByOwnerId(Long ownerId) {
         String sql = "SELECT * FROM clients WHERE owner_id = :ownerId AND activo = true ORDER BY particular_id ASC";

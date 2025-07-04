@@ -33,6 +33,11 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
+    public Integer getParticularIdByClientId(Long clientId) {
+        return 0;
+    }
+
+    @Override
     public List<Client> getClientsByOwnerId(Long ownerId) {
         return Collections.emptyList();
     }

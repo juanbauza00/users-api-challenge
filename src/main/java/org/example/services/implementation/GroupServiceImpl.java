@@ -1,11 +1,14 @@
 package org.example.services.implementation;
 
+import org.example.models.Client;
 import org.example.models.Group;
 import org.example.repositories.GroupRepository;
+import org.example.services.interfaces.ClientService;
 import org.example.services.interfaces.GroupService;
 import org.example.services.interfaces.OwnerService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,15 +17,23 @@ public class GroupServiceImpl implements GroupService {
 
     private final GroupRepository groupRepository;
     private final OwnerService ownerService;
+    private final ClientService clientService;
 
-    public GroupServiceImpl(GroupRepository groupRepository, OwnerService ownerService) {
+    public GroupServiceImpl(GroupRepository groupRepository, OwnerService ownerService, ClientService clientService) {
         this.groupRepository = groupRepository;
         this.ownerService = ownerService;
+        this.clientService = clientService;
     }
 
     private void validateId(Long groupId) {
         if (groupId == null || groupId <= 0) {
             throw new IllegalArgumentException("El id debe ser mayor a cero");
+        }
+    }
+
+    private void validateParticularId(Integer particularId) {
+        if (particularId == null || particularId <= 0) {
+            throw new IllegalArgumentException("El id particular debe ser mayor a cero");
         }
     }
 
@@ -99,36 +110,43 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public void addClientToGroup(Long clientId, Long groupId) {
-        validateId(clientId);
+    public void addClientToGroup(Integer particularId, Long groupId) {
         validateId(groupId);
+        validateParticularId(particularId);
 
-        if (!existsById(groupId)) {
-            throw new IllegalArgumentException("No existe el grupo con id: " + groupId);
-        }
+        Group group = getGroupById(groupId);
+        Client client = clientService.getClientByOwnerParticularId(particularId, group.getOwnerId());
+
         try {
-            groupRepository.addClientToGroup(clientId, groupId);
+            groupRepository.addClientToGroup(client.getId(), groupId);
         } catch (Exception e) {
-            throw new RuntimeException("Error al agregar el cliente " + clientId + " al grupo " + groupId + ": " + e.getMessage());
+            throw new RuntimeException("Error al agregar el cliente " + particularId + " al grupo " + groupId + ": " + e.getMessage());
         }
     }
 
     @Override
-    public List<Long> getClientIdsByGroup(Long groupId) {
+    public List<Integer> getClientParticularIdsByGroup(Long groupId) {
         validateId(groupId);
         if (!existsById(groupId)) {
             throw new IllegalArgumentException("No existe el grupo con id: " + groupId);
         }
-        return groupRepository.getClientIdsByGroup(groupId);
+        List<Long> clientsIds = groupRepository.getClientIdsByGroup(groupId);
+        List<Integer> clientsParticularIdsList = new ArrayList<>();
+        for (Long clientId : clientsIds) {
+            clientsParticularIdsList.add(clientService.getParticularIdByClientId(clientId));
+        }
+        return clientsParticularIdsList;
     }
 
     @Override
-    public boolean removeClientFromGroup(Long clientId, Long groupId) {
-        validateId(clientId);
+    public boolean removeClientFromGroup(Integer clientParticularId, Long groupId) {
+        validateParticularId(clientParticularId);
         validateId(groupId);
         if (!existsById(groupId)) {
             throw new IllegalArgumentException("No existe el grupo con id: " + groupId);
         }
-        return groupRepository.removeClientFromGroup(clientId, groupId);
+        Group group = getGroupById(groupId);
+        Client client = clientService.getClientByOwnerParticularId(clientParticularId, group.getOwnerId());
+        return groupRepository.removeClientFromGroup(client.getId(), groupId);
     }
 }

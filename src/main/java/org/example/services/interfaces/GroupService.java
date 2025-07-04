@@ -25,7 +25,7 @@ public interface GroupService {
     boolean groupBelongsToOwner(Long groupId, Long ownerId);
 
     // CLIENT-GROUP OPERATIONS
-    void addClientToGroup(Long clientId, Long groupId);
-    List<Long> getClientIdsByGroup(Long groupId);
-    boolean removeClientFromGroup(Long clientId, Long groupId);
+    void addClientToGroup(Integer particularId, Long groupId);
+    List<Integer> getClientParticularIdsByGroup(Long groupId);
+    boolean removeClientFromGroup(Integer clientParticularId, Long groupId);
 }
