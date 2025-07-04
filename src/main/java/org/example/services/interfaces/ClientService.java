@@ -22,7 +22,7 @@ public interface ClientService {
     List<Client> getClientsByOwnerId(Long ownerId);
 
     // UPDATE
-    Client updateClient(Integer particularId, Long ownerId, Client clientData);
+    Client updateClient(Long ownerId, Client clientData);
 
     // DELETE
     boolean deleteClient(Integer particularId, Long ownerId);

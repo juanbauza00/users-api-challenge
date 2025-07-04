@@ -5,5 +5,23 @@ spring:
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
 
+    # Configuración del pool de conexiones
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      auto-commit: false  # IMPORTANTE: Permite control manual de transacciones
+
+  # Config para transacciones
+  transaction:
+    default-timeout: 30
+    rollback-on-commit-failure: true
+
+app:
+  batch:
+    threshold: 10
+
 server:
   port: 8080
