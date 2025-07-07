@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityNotFoundException;
+
 @RestController
 @RequestMapping("/api/owners")
 public class OwnerController {
@@ -35,7 +37,7 @@ public class OwnerController {
         try {
             Owner owner = ownerService.getOwnerById(id);
             return new ResponseEntity<>(owner, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
+        } catch (EntityNotFoundException e) {
             return new ResponseEntity<>("No se encontró owner con id: " + id, HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>("Error interno: "+ e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -62,7 +64,22 @@ public class OwnerController {
             return new ResponseEntity<>(updatedOwner, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error de validación: " + e.getMessage());
-        } catch (RuntimeException e) {
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Owner no encontrado: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno del servidor: " + e.getMessage());
+        }
+    }
+
+    // DELETE
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteOwner(@PathVariable Long id) {
+        try {
+            ownerService.deleteOwner(id);
+            return ResponseEntity.ok("Owner eliminado exitosamente");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error de validación: " + e.getMessage());
+        } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Owner no encontrado: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno del servidor: " + e.getMessage());
