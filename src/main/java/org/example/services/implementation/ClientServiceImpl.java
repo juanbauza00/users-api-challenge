@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ public class ClientServiceImpl implements ClientService {
             throw new IllegalArgumentException("El owner ID debe ser un número positivo");
         }
         if (!ownerService.existsById(ownerId)) {
-            throw new IllegalArgumentException("No existe un owner con el id " + ownerId);
+            throw new EntityNotFoundException("No existe un owner con el id " + ownerId);
         }
     }
 
@@ -71,7 +72,7 @@ public class ClientServiceImpl implements ClientService {
             try {
                 validateClient(client);
                 if (!client.getOwnerId().equals(ownerId)) {
-                    throw new IllegalArgumentException("El cliente: " + client.getNombre() + " " +client.getApellido() + " no pertenece al owner especificado");
+                    throw new EntityNotFoundException("El cliente: " + client.getNombre() + " " +client.getApellido() + " no existe");
                 }
             } catch (Exception e) {
                 throw new IllegalArgumentException("Error en cliente " + client.getNombre() + " " +client.getApellido() + ": " + e.getMessage());
@@ -79,7 +80,7 @@ public class ClientServiceImpl implements ClientService {
         }
     }
 
-
+    // CREATE
     @Override
     public Client createClient(Client client) {
         validateClient(client);
@@ -88,6 +89,7 @@ public class ClientServiceImpl implements ClientService {
         return clientRepository.save(client);
     }
 
+    // CREATE BATCH
     @Override
     @Transactional(rollbackFor = Exception.class) // Aplica rollback el generarse una exepcion
     public List<Client> createClientBatch(List<Client> clients, Long ownerId) {
@@ -112,13 +114,14 @@ public class ClientServiceImpl implements ClientService {
         return createdClients;
     }
 
+    // READ ONE (Client)
     @Override
     public Client getClientByOwnerParticularId(Integer particularId, Long ownerId) {
         validateParticularId(particularId);
         validateOwnerId(ownerId);
 
         return clientRepository.findByOwnerParticularId(ownerId, particularId)
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new EntityNotFoundException(
                         "No se encontró cliente con ID particular " + particularId + " para el owner " + ownerId ));
     }
 
@@ -130,7 +133,7 @@ public class ClientServiceImpl implements ClientService {
         try {
             return clientRepository.getParticularIdByClientId(clientId);
         } catch (Exception e) {
-            throw new IllegalArgumentException("No se encontró cliente con ID " + clientId);
+            throw new EntityNotFoundException("No se encontró cliente con ID " + clientId);
         }
     }
 
@@ -149,7 +152,7 @@ public class ClientServiceImpl implements ClientService {
         Client existingClient = getClientByOwnerParticularId(clientData.getParticularId(), ownerId);
 
         if (!existingClient.getOwnerId().equals(ownerId)) {
-            throw new IllegalArgumentException(
+            throw new EntityNotFoundException(
                     "El owner con ID " + ownerId + " no cuenta con el cliente id " + clientData.getParticularId());
         }
 

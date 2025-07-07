@@ -8,6 +8,7 @@ import org.example.services.interfaces.GroupService;
 import org.example.services.interfaces.OwnerService;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -57,14 +58,14 @@ public class GroupServiceImpl implements GroupService {
     public Group getGroupById(Long id) {
         validateId(id);
         return groupRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("El id: " + id + " no existe."));
+                .orElseThrow(() -> new EntityNotFoundException("El id: " + id + " no existe."));
     }
 
     @Override
     public List<Group> getGroupsByOwnerId(Long ownerId) {
         validateId(ownerId);
         if (!ownerService.existsById(ownerId)) {
-            throw new IllegalArgumentException("No existe un owner con el id " + ownerId);
+            throw new EntityNotFoundException("No existe un owner con el id " + ownerId);
         }
         return groupRepository.findAllByOwnerId(ownerId);
     }
@@ -76,7 +77,7 @@ public class GroupServiceImpl implements GroupService {
 
         Group dbGroup = getGroupById(id);
         if (!dbGroup.getOwnerId().equals(group.getOwnerId())) {
-            throw new IllegalArgumentException("El grupo id: " + id + " no pertenece al owner id: "+ group.getOwnerId());
+            throw new EntityNotFoundException("El grupo id: " + id + " no pertenece al owner id: "+ group.getOwnerId());
         }
         group.setId(id);
         return groupRepository.update(group);
@@ -86,7 +87,7 @@ public class GroupServiceImpl implements GroupService {
     public boolean deleteGroup(Long id) {
         validateId(id);
         if (!existsById(id)) {
-            throw new IllegalArgumentException("No existe el grupo con id: " + id);
+            throw new EntityNotFoundException("No existe el grupo con id: " + id);
         }
         return groupRepository.deleteGroupById(id);
     }
@@ -128,7 +129,7 @@ public class GroupServiceImpl implements GroupService {
     public List<Integer> getClientParticularIdsByGroup(Long groupId) {
         validateId(groupId);
         if (!existsById(groupId)) {
-            throw new IllegalArgumentException("No existe el grupo con id: " + groupId);
+            throw new EntityNotFoundException("No existe el grupo con id: " + groupId);
         }
         List<Long> clientsIds = groupRepository.getClientIdsByGroup(groupId);
         List<Integer> clientsParticularIdsList = new ArrayList<>();
@@ -143,7 +144,7 @@ public class GroupServiceImpl implements GroupService {
         validateParticularId(clientParticularId);
         validateId(groupId);
         if (!existsById(groupId)) {
-            throw new IllegalArgumentException("No existe el grupo con id: " + groupId);
+            throw new EntityNotFoundException("No existe el grupo con id: " + groupId);
         }
         Group group = getGroupById(groupId);
         Client client = clientService.getClientByOwnerParticularId(clientParticularId, group.getOwnerId());

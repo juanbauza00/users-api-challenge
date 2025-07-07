@@ -5,6 +5,7 @@ import org.example.repositories.OwnerRepository;
 import org.example.services.interfaces.OwnerService;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
 @Service
@@ -44,7 +45,7 @@ public class OwnerServiceImpl implements OwnerService {
     public Owner getOwnerById(Long id) {
         validateOwnerId(id);
         return ownerRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("No existe el owner con id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("No existe el owner con id: " + id));
     }
 
     @Override

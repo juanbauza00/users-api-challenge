@@ -53,7 +53,7 @@ public class ClientRepository {
 
     // READ ONE
     public Optional<Client> findByOwnerParticularId(Long ownerId, int particularId) {
-        String sql = "SELECT * FROM clients WHERE particular_id = :particularId AND owner_id = :ownerId";
+        String sql = "SELECT * FROM clients WHERE particular_id = :particular_id AND owner_id = :owner_id";
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("particular_id", particularId);
         params.addValue("owner_id", ownerId);
