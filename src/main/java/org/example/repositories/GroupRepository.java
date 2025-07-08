@@ -103,8 +103,10 @@ public class GroupRepository {
 
     // Asignar cliente a grupo
     public void addClientToGroup(Long clientId, Long groupId) {
+        if (isClientInGroup(clientId, groupId)) {
+            throw new IllegalStateException("El cliente ya pertenece a este grupo");
+        }
         String sql = "INSERT INTO clients_groups (client_id, group_id) VALUES (:client_id, :group_id)";
-
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("client_id", clientId);
         params.addValue("group_id", groupId);
@@ -124,13 +126,28 @@ public class GroupRepository {
 
     // Quitar cliente de grupo
     public boolean removeClientFromGroup(Long clientId, Long groupId) {
-        String sql = "DELETE FROM clients_groups WHERE client_id = :client_id AND group_id = :group_id";
+        if (!isClientInGroup(clientId, groupId)) {
+            throw new IllegalStateException("El cliente no pertenece a este grupo");
+        }
 
+        String sql = "DELETE FROM clients_groups WHERE client_id = :client_id AND group_id = :group_id";
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("client_id", clientId);
         params.addValue("group_id", groupId);
 
         int rowsAffected = jdbcTemplate.update(sql, params);
         return rowsAffected > 0;
+    }
+
+    // Valida que el cliente esté en el grupo
+    public boolean isClientInGroup(Long clientId, Long groupId) {
+        String sql = "SELECT COUNT(*) FROM clients_groups WHERE client_id = :client_id AND group_id = :group_id";
+
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("client_id", clientId);
+        params.addValue("group_id", groupId);
+
+        Integer count = jdbcTemplate.queryForObject(sql, params, Integer.class);
+        return count != null && count > 0;
     }
 }

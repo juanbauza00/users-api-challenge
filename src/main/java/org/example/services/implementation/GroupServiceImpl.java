@@ -120,6 +120,8 @@ public class GroupServiceImpl implements GroupService {
 
         try {
             groupRepository.addClientToGroup(client.getId(), groupId);
+        } catch (IllegalStateException e) {
+            throw new IllegalArgumentException("El cliente " + particularId + " ya pertenece al grupo " + groupId);
         } catch (Exception e) {
             throw new RuntimeException("Error al agregar el cliente " + particularId + " al grupo " + groupId + ": " + e.getMessage());
         }
@@ -148,6 +150,11 @@ public class GroupServiceImpl implements GroupService {
         }
         Group group = getGroupById(groupId);
         Client client = clientService.getClientByOwnerParticularId(clientParticularId, group.getOwnerId());
-        return groupRepository.removeClientFromGroup(client.getId(), groupId);
+
+        try {
+            return groupRepository.removeClientFromGroup(client.getId(), groupId);
+        } catch (IllegalStateException e) {
+            throw new IllegalArgumentException("El cliente " + clientParticularId + " no pertenece al grupo " + groupId);
+        }
     }
 }
