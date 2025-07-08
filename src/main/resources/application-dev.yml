@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/users_db
+    username: postgres
+    password: admin
+    driver-class-name: org.postgresql.Driver
+
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
+app:
+  batch:
+    threshold: 5
+
+server:
+  port: 8080
+
+logging:
+  level:
+    org.springframework.jdbc: DEBUG
+    org.example: DEBUG
