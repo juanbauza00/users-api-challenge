@@ -100,9 +100,10 @@ public class ClientServiceImpl implements ClientService {
             // todo: Implementar kafka
         }
 
+        LocalDateTime batchTime = LocalDateTime.now();
         List<Client> createdClients = new ArrayList<>();
         for (Client client : clients) {
-            client.setFechaCreacion(LocalDateTime.now());
+            client.setFechaCreacion(batchTime);
             client.setActivo(true);
             try {
                 Client savedClient = clientRepository.save(client);
