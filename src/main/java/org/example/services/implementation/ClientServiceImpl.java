@@ -82,6 +82,7 @@ public class ClientServiceImpl implements ClientService {
 
     // CREATE
     @Override
+    @Transactional
     public Client createClient(Client client) {
         validateClient(client);
         client.setFechaCreacion(LocalDateTime.now());
@@ -145,6 +146,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
+    @Transactional
     public Client updateClient(Long ownerId, Client clientData) {
         validateParticularId(clientData.getParticularId());
         validateOwnerId(ownerId);
@@ -165,6 +167,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
+    @Transactional
     public boolean deleteClient(Integer particularId, Long ownerId) {
         validateParticularId(particularId);
         validateOwnerId(ownerId);

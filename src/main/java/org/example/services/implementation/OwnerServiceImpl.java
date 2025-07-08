@@ -4,6 +4,7 @@ import org.example.models.Owner;
 import org.example.repositories.OwnerRepository;
 import org.example.services.interfaces.OwnerService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
@@ -36,6 +37,7 @@ public class OwnerServiceImpl implements OwnerService {
     }
 
     @Override
+    @Transactional
     public Owner createOwner(Owner owner) {
         validateOwner(owner);
         return ownerRepository.save(owner);
@@ -54,6 +56,7 @@ public class OwnerServiceImpl implements OwnerService {
     }
 
     @Override
+    @Transactional
     public Owner updateOwner(Long id, Owner ownerData) {
         validateOwnerId(id);
         validateOwner(ownerData);
@@ -62,6 +65,7 @@ public class OwnerServiceImpl implements OwnerService {
     }
 
     @Override
+    @Transactional
     public boolean deleteOwner(Long id) {
         validateOwnerId(id);
         return ownerRepository.deleteById(id);

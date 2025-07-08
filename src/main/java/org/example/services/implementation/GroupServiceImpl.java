@@ -9,6 +9,7 @@ import org.example.services.interfaces.OwnerService;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -49,6 +50,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public Group createGroup(Group group) {
         validateGroup(group);
         return groupRepository.save(group);
@@ -71,6 +73,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public Group updateGroup(Long id, Group group) {
         validateId(id);
         validateGroup(group);
@@ -84,6 +87,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public boolean deleteGroup(Long id) {
         validateId(id);
         if (!existsById(id)) {
@@ -111,6 +115,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public void addClientToGroup(Integer particularId, Long groupId) {
         validateId(groupId);
         validateParticularId(particularId);
@@ -142,6 +147,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public boolean removeClientFromGroup(Integer clientParticularId, Long groupId) {
         validateParticularId(clientParticularId);
         validateId(groupId);
