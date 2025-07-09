@@ -89,7 +89,6 @@ public class GroupController {
     public ResponseEntity<?> deleteGroup(@PathVariable("ownerId") Long ownerId,
                                          @PathVariable("groupId") Long groupId) {
         try {
-            // Verificar que el grupo pertenece al owner antes de eliminar
             if (!groupService.groupBelongsToOwner(groupId, ownerId)) {
                 return new ResponseEntity<>("El grupo no pertenece a este owner", HttpStatus.FORBIDDEN);
             }
@@ -110,7 +109,6 @@ public class GroupController {
                                               @PathVariable("groupId") Long groupId,
                                               @PathVariable("particularId") Integer particularId) {
         try {
-            // Verificar que el grupo pertenece al owner
             if (!groupService.groupBelongsToOwner(groupId, ownerId)) {
                 return new ResponseEntity<>("El grupo no pertenece a este owner", HttpStatus.FORBIDDEN);
             }
@@ -131,7 +129,6 @@ public class GroupController {
                                                    @PathVariable("groupId") Long groupId,
                                                    @PathVariable("particularId") Integer particularId) {
         try {
-            // Verificar que el grupo pertenece al owner
             if (!groupService.groupBelongsToOwner(groupId, ownerId)) {
                 return new ResponseEntity<>("El grupo no pertenece a este owner", HttpStatus.FORBIDDEN);
             }
@@ -151,7 +148,6 @@ public class GroupController {
     public ResponseEntity<?> getClientsInGroup(@PathVariable("ownerId") Long ownerId,
                                                @PathVariable("groupId") Long groupId) {
         try {
-            // Verificar que el grupo pertenece al owner
             if (!groupService.groupBelongsToOwner(groupId, ownerId)) {
                 return new ResponseEntity<>("El grupo no pertenece a este owner", HttpStatus.FORBIDDEN);
             }
