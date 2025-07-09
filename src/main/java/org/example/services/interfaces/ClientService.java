@@ -1,16 +1,17 @@
 package org.example.services.interfaces;
 
 
+import org.example.dtos.ClientInputDto;
 import org.example.models.Client;
 
 import java.util.List;
 
 public interface ClientService {
     // CREATE
-    Client createClient(Client client);
+    Client createClient(ClientInputDto clientDto, Long ownerId);
 
     // CREATE (BATCH)
-    List<Client> createClientBatch(List<Client> clients, Long ownerId);
+    List<Client> createClientBatch(List<ClientInputDto> clientDtos, Long ownerId);
 
     // GET ONE
     Client getClientByOwnerParticularId(Integer particularId, Long ownerId);
@@ -22,7 +23,7 @@ public interface ClientService {
     List<Client> getClientsByOwnerId(Long ownerId);
 
     // UPDATE
-    Client updateClient(Long ownerId, Client clientData);
+    Client updateClient(Long ownerId, Integer particularId, ClientInputDto clientDto);
 
     // DELETE
     boolean deleteClient(Integer particularId, Long ownerId);

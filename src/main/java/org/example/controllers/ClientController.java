@@ -1,5 +1,6 @@
 package org.example.controllers;
 
+import org.example.dtos.ClientInputDto;
 import org.example.models.Client;
 import org.example.services.interfaces.ClientService;
 import org.springframework.http.HttpStatus;
@@ -20,12 +21,11 @@ public class ClientController {
     }
 
     // CREATE INDIVIDUAL
-    @PostMapping("/owner/{ownerId}")
+    @PostMapping("/{ownerId}")
     public ResponseEntity<?> createClient(@PathVariable("ownerId") Long ownerId,
-                                          @RequestBody Client client) {
+                                          @RequestBody ClientInputDto clientDto) {
         try {
-            client.setOwnerId(ownerId);
-            Client createdClient = clientService.createClient(client);
+            Client createdClient = clientService.createClient(clientDto, ownerId);
             return new ResponseEntity<>(createdClient, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>("Error de validación: " + e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -37,13 +37,11 @@ public class ClientController {
     }
 
     // CREATE BATCH
-    @PostMapping("/owner/{ownerId}/batch")
+    @PostMapping("/batch/{ownerId}")
     public ResponseEntity<?> createClientBatch(@PathVariable("ownerId") Long ownerId,
-                                               @RequestBody List<Client> clients) {
+                                               @RequestBody List<ClientInputDto> clientDtos) {
         try {
-            // Asegurar que todos los clientes tengan el ownerId correcto
-            clients.forEach(client -> client.setOwnerId(ownerId));
-            List<Client> createdClients = clientService.createClientBatch(clients, ownerId);
+            List<Client> createdClients = clientService.createClientBatch(clientDtos, ownerId);
             return new ResponseEntity<>(createdClients, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>("Error de validación: " + e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -60,7 +58,7 @@ public class ClientController {
     }
 
     // READ ONE BY PARTICULAR ID
-    @GetMapping("/owner/{ownerId}/client/{particularId}")
+    @GetMapping("/{ownerId}/{particularId}")
     public ResponseEntity<?> getClientByParticularId(@PathVariable("ownerId") Long ownerId,
                                                      @PathVariable("particularId") Integer particularId) {
         try {
@@ -76,7 +74,7 @@ public class ClientController {
     }
 
     // READ ALL BY OWNER
-    @GetMapping("/owner/{ownerId}")
+    @GetMapping("/{ownerId}")
     public ResponseEntity<?> getClientsByOwner(@PathVariable("ownerId") Long ownerId) {
         try {
             List<Client> clients = clientService.getClientsByOwnerId(ownerId);
@@ -91,14 +89,12 @@ public class ClientController {
     }
 
     // UPDATE BY PARTICULAR ID
-    @PutMapping("/owner/{ownerId}/client/{particularId}")
+    @PutMapping("/{ownerId}/{particularId}")
     public ResponseEntity<?> updateClient(@PathVariable("ownerId") Long ownerId,
                                           @PathVariable("particularId") Integer particularId,
-                                          @RequestBody Client clientData) {
+                                          @RequestBody ClientInputDto clientDto) {
         try {
-            clientData.setOwnerId(ownerId);
-            clientData.setParticularId(particularId);
-            Client updatedClient = clientService.updateClient(ownerId, clientData);
+            Client updatedClient = clientService.updateClient(ownerId, particularId, clientDto);
             return new ResponseEntity<>(updatedClient, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>("Error de validación: " + e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -110,7 +106,7 @@ public class ClientController {
     }
 
     // DELETE BY PARTICULAR ID
-    @DeleteMapping("/owner/{ownerId}/client/{particularId}")
+    @DeleteMapping("/{ownerId}/{particularId}")
     public ResponseEntity<?> deleteClient(@PathVariable("ownerId") Long ownerId,
                                           @PathVariable("particularId") Integer particularId) {
         try {

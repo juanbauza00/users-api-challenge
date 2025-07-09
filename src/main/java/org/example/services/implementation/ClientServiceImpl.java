@@ -1,5 +1,6 @@
 package org.example.services.implementation;
 
+import org.example.dtos.ClientInputDto;
 import org.example.models.Client;
 import org.example.repositories.ClientRepository;
 import org.example.services.interfaces.ClientService;
@@ -43,48 +44,48 @@ public class ClientServiceImpl implements ClientService {
         }
     }
 
-    private void validateClient(Client client) {
-        if (client == null) {
+    private void validateClientInputDto(ClientInputDto clientDto) {
+        if (clientDto == null) {
             throw new IllegalArgumentException("Los datos del cliente no pueden ser nulos");
         }
-        if (client.getNombre() == null || client.getNombre().trim().isEmpty()) {
+        if (clientDto.getNombre() == null || clientDto.getNombre().trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre del cliente es obligatorio");
         }
-        if (client.getApellido() == null || client.getApellido().trim().isEmpty()) {
+        if (clientDto.getApellido() == null || clientDto.getApellido().trim().isEmpty()) {
             throw new IllegalArgumentException("El apellido del cliente es obligatorio");
         }
-        if (client.getFechaNacimiento() == null) {
+        if (clientDto.getFechaNacimiento() == null) {
             throw new IllegalArgumentException("La fecha de nacimiento es obligatoria");
         }
-        if (client.getFechaNacimiento().isAfter(LocalDate.now())) {
+        if (clientDto.getFechaNacimiento().isAfter(LocalDate.now())) {
             throw new IllegalArgumentException("La fecha de nacimiento no puede ser futura");
         }
-        validateOwnerId(client.getOwnerId());
     }
 
-    private void validateClientBatch(List<Client> clients, Long ownerId) {
-        if (clients == null || clients.isEmpty()) {
+    private void validateClientBatch(List<ClientInputDto> clientDtos, Long ownerId) {
+        if (clientDtos == null || clientDtos.isEmpty()) {
             throw new IllegalArgumentException("La lista de clientes no puede estar vacía");
         }
-        validateOwnerId(ownerId);
-
-        for (Client client : clients) {
-            try {
-                validateClient(client);
-                if (!client.getOwnerId().equals(ownerId)) {
-                    throw new EntityNotFoundException("El cliente: " + client.getNombre() + " " +client.getApellido() + " no existe");
-                }
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Error en cliente " + client.getNombre() + " " +client.getApellido() + ": " + e.getMessage());
-            }
+        for (ClientInputDto clientDto : clientDtos) {
+            validateClientInputDto(clientDto);
         }
+    }
+
+    private Client mapClientDtoInputToClient(ClientInputDto clientDto) {
+        Client client = new Client();
+        client.setNombre(clientDto.getNombre());
+        client.setApellido(clientDto.getApellido());
+        client.setFechaNacimiento(clientDto.getFechaNacimiento());
+        return client;
     }
 
     // CREATE
     @Override
     @Transactional
-    public Client createClient(Client client) {
-        validateClient(client);
+    public Client createClient(ClientInputDto clientDto, Long ownerId) {
+        validateClientInputDto(clientDto);
+        Client client = mapClientDtoInputToClient(clientDto);
+        client.setOwnerId(ownerId);
         client.setFechaCreacion(LocalDateTime.now());
         client.setActivo(true);
         return clientRepository.save(client);
@@ -93,17 +94,20 @@ public class ClientServiceImpl implements ClientService {
     // CREATE BATCH
     @Override
     @Transactional(rollbackFor = Exception.class) // Aplica rollback el generarse una exepcion
-    public List<Client> createClientBatch(List<Client> clients, Long ownerId) {
-        validateClientBatch(clients, ownerId);
+    public List<Client> createClientBatch(List<ClientInputDto> clientDtos, Long ownerId) {
+
         // Toma desicion de proceso asincronico
-        if (clients.size() > batchThreshold) {
+        if (clientDtos.size() > batchThreshold) {
             throw new RuntimeException("Implementar kafka");
             // todo: Implementar kafka
         }
+        validateClientBatch(clientDtos, ownerId);
 
         LocalDateTime batchTime = LocalDateTime.now();
         List<Client> createdClients = new ArrayList<>();
-        for (Client client : clients) {
+        for (ClientInputDto clientDto : clientDtos) {
+            Client client = mapClientDtoInputToClient(clientDto);
+            client.setOwnerId(ownerId);
             client.setFechaCreacion(batchTime);
             client.setActivo(true);
             try {
@@ -147,23 +151,22 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     @Transactional
-    public Client updateClient(Long ownerId, Client clientData) {
-        validateParticularId(clientData.getParticularId());
+    public Client updateClient(Long ownerId, Integer particularId, ClientInputDto clientDto) {
+        validateParticularId(particularId);
         validateOwnerId(ownerId);
-        validateClient(clientData);
+        validateClientInputDto(clientDto);
 
-        Client existingClient = getClientByOwnerParticularId(clientData.getParticularId(), ownerId);
+
+        Client existingClient = getClientByOwnerParticularId(particularId, ownerId);
 
         if (!existingClient.getOwnerId().equals(ownerId)) {
             throw new EntityNotFoundException(
-                    "El owner con ID " + ownerId + " no cuenta con el cliente id " + clientData.getParticularId());
+                    "El owner con ID " + ownerId + " no cuenta con el cliente id " + particularId);
         }
-
-        // Se actualizan camps modificables
-        existingClient.setNombre(clientData.getNombre());
-        existingClient.setApellido(clientData.getApellido());
-        existingClient.setFechaNacimiento(clientData.getFechaNacimiento());
-        return clientRepository.update(existingClient);
+        Client client = mapClientDtoInputToClient(clientDto);
+        client.setParticularId(particularId);
+        client.setOwnerId(ownerId);
+        return clientRepository.update(client);
     }
 
     @Override
