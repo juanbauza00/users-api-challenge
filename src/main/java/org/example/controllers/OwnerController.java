@@ -1,5 +1,6 @@
 package org.example.controllers;
 
+import org.example.dtos.OwnerInputDto;
 import org.example.models.Owner;
 import org.example.services.interfaces.OwnerService;
 import org.springframework.http.HttpStatus;
@@ -20,9 +21,9 @@ public class OwnerController {
 
     // CREATE
     @PostMapping
-    public ResponseEntity<?> createOwner(@RequestBody Owner owner) {
+    public ResponseEntity<?> createOwner(@RequestBody OwnerInputDto ownerDto) {
         try{
-            Owner createdOwner = ownerService.createOwner(owner);
+            Owner createdOwner = ownerService.createOwner(ownerDto);
             return new ResponseEntity<>(createdOwner, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>("Error de validación: " + e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -40,7 +41,7 @@ public class OwnerController {
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>("No se encontró owner con id: " + id, HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            return new ResponseEntity<>("Error interno: "+ e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Error interno: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -58,9 +59,9 @@ public class OwnerController {
 
     // UPDATE
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateOwner(@PathVariable("id") Long id, @RequestBody Owner owner) {
+    public ResponseEntity<?> updateOwner(@PathVariable("id") Long id, @RequestBody OwnerInputDto ownerDto) {
         try {
-            Owner updatedOwner = ownerService.updateOwner(id, owner);
+            Owner updatedOwner = ownerService.updateOwner(id, ownerDto);
             return new ResponseEntity<>(updatedOwner, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error de validación: " + e.getMessage());

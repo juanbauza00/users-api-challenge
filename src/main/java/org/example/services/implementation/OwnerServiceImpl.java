@@ -1,5 +1,6 @@
 package org.example.services.implementation;
 
+import org.example.dtos.OwnerInputDto;
 import org.example.models.Owner;
 import org.example.repositories.OwnerRepository;
 import org.example.services.interfaces.OwnerService;
@@ -18,29 +19,29 @@ public class OwnerServiceImpl implements OwnerService {
         this.ownerRepository = ownerRepository;
     }
 
-    private void validateOwner(Owner owner) {
-        if (owner == null) {
-            throw new IllegalArgumentException("Los datos del owner no pueden ser nulos");
-        }
-        if (owner.getNombre() == null || owner.getNombre().trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre del owner es obligatorio");
-        }
-        if (owner.getNombre().trim().length() > 255) {
-            throw new IllegalArgumentException("El nombre del owner no puede exceder 255 caracteres");
-        }
-    }
-
     private void validateOwnerId(Long id){
         if (id == null || id <= 0) {
             throw new IllegalArgumentException("El id debe ser un numero positivo");
         }
     }
 
+    private void validateOwnerInputDto(OwnerInputDto ownerDto){
+        if (ownerDto == null || ownerDto.getName() == null || ownerDto.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre no puede estar vacío");
+        }
+    }
+
+    private Owner mapOwnerInputDtoToOwner(OwnerInputDto ownerDto){
+        Owner owner = new Owner();
+        owner.setNombre(ownerDto.getName());
+        return owner;
+    }
+
     @Override
     @Transactional
-    public Owner createOwner(Owner owner) {
-        validateOwner(owner);
-        return ownerRepository.save(owner);
+    public Owner createOwner(OwnerInputDto ownerDto) {
+        validateOwnerInputDto(ownerDto);
+        return ownerRepository.save(mapOwnerInputDtoToOwner(ownerDto));
     }
 
     @Override
@@ -57,11 +58,10 @@ public class OwnerServiceImpl implements OwnerService {
 
     @Override
     @Transactional
-    public Owner updateOwner(Long id, Owner ownerData) {
+    public Owner updateOwner(Long id, OwnerInputDto ownerDto) {
         validateOwnerId(id);
-        validateOwner(ownerData);
-        ownerData.setId(id);
-        return ownerRepository.update(ownerData);
+        validateOwnerInputDto(ownerDto);
+        return ownerRepository.update(mapOwnerInputDtoToOwner(ownerDto));
     }
 
     @Override
