@@ -26,5 +26,18 @@ logging:
     org.springframework.jdbc.core.StatementCreatorUtils: TRACE
     org.example: DEBUG
     org.springframework.transaction: DEBUG
+    org.apache.kafka: DEBUG
+    org.springframework.kafka: DEBUG
   pattern:
     console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+kafka:
+  bootstrap-servers: localhost:9092
+  schema-registry-url: http://localhost:8081
+
+  producer:
+    acks: 1  # Menos estricto en dev
+    retries: 1
+
+  consumer:
+    group-id: client-batch-group-dev  # Grupo separado para dev

@@ -25,3 +25,27 @@ app:
 
 server:
   port: 8080
+
+kafka:
+  bootstrap-servers: kafka1:9092
+  schema-registry-url: http://schema-registry:8081
+
+  producer:
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+    acks: all
+    retries: 3
+    batch-size: 16384
+    linger-ms: 5
+    buffer-memory: 33554432
+
+  consumer:
+    group-id: client-batch-group
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+    auto-offset-reset: earliest
+    enable-auto-commit: false
+    max-poll-records: 10
+
+  topics:
+    client-batch: client-batch-topic

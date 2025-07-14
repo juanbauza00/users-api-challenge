@@ -1,0 +1,56 @@
+{
+  "type": "record",
+  "name": "ClientBatch",
+  "namespace": "org.example.avro",
+  "doc": "Esquema para procesar lotes de clientes de forma asíncrona",
+  "fields": [
+    {
+      "name": "batchId",
+      "type": "string",
+      "doc": "Identificador único del lote para tracking"
+    },
+    {
+      "name": "ownerId",
+      "type": "long",
+      "doc": "ID del owner que envía el lote"
+    },
+    {
+      "name": "clients",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "ClientData",
+          "fields": [
+            {
+              "name": "nombre",
+              "type": "string",
+              "doc": "Nombre del cliente"
+            },
+            {
+              "name": "apellido",
+              "type": "string",
+              "doc": "Apellido del cliente"
+            },
+            {
+              "name": "fechaNacimiento",
+              "type": "string",
+              "doc": "Fecha de nacimiento en formato ISO (YYYY-MM-DD)"
+            }
+          ]
+        }
+      },
+      "doc": "Lista de clientes a procesar"
+    },
+    {
+      "name": "timestamp",
+      "type": "long",
+      "doc": "Timestamp de cuando se creó el lote (epoch millis)"
+    },
+    {
+      "name": "totalClients",
+      "type": "int",
+      "doc": "Número total de clientes en el lote"
+    }
+  ]
+}
