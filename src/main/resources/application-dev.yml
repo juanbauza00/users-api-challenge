@@ -36,8 +36,8 @@ kafka:
   schema-registry-url: http://localhost:8081
 
   producer:
-    acks: 1  # Menos estricto en dev
+    acks: 1
     retries: 1
 
   consumer:
-    group-id: client-batch-group-dev  # Grupo separado para dev
+    group-id: client-batch-group-dev
