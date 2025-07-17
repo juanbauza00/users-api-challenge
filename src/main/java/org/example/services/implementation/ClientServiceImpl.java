@@ -5,6 +5,9 @@ import org.example.models.Client;
 import org.example.repositories.ClientRepository;
 import org.example.services.interfaces.ClientService;
 import org.example.services.interfaces.OwnerService;
+import org.example.services.kafka.ClientBatchProducerService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,15 +21,19 @@ import java.util.List;
 @Service
 public class ClientServiceImpl implements ClientService {
 
+    private static final Logger log = LoggerFactory.getLogger(ClientBatchProducerService.class);
     private final ClientRepository clientRepository;
     private final OwnerService ownerService;
+    private final ClientBatchProducerService clientBatchProducerService;
 
     @Value("${app.batch.threshold:10}") // Toma el valor configurado y sino define por defecto 10
     private int batchThreshold;
 
-    public ClientServiceImpl(ClientRepository clientRepository, OwnerService ownerService) {
+    public ClientServiceImpl(ClientRepository clientRepository, OwnerService ownerService,
+                             ClientBatchProducerService clientBatchProducerService) {
         this.clientRepository = clientRepository;
         this.ownerService = ownerService;
+        this.clientBatchProducerService = clientBatchProducerService;
     }
 
     private void validateOwnerId(Long ownerId) {
@@ -96,12 +103,26 @@ public class ClientServiceImpl implements ClientService {
     @Transactional(rollbackFor = Exception.class) // Aplica rollback el generarse una exepcion
     public List<Client> createClientBatch(List<ClientInputDto> clientDtos, Long ownerId) {
 
+        validateClientBatch(clientDtos, ownerId);
+
         // Toma desicion de proceso asincronico
         if (clientDtos.size() > batchThreshold) {
-            throw new RuntimeException("Implementar kafka");
-            // todo: Implementar kafka
+            log.info("Lote supera la cant. de: {}, enviando a procesamiento asíncrono - Owner: {}, Clientes: {}",
+                    batchThreshold, ownerId, clientDtos.size());
+
+            try {
+                String batchId = clientBatchProducerService.sendClientBatch(clientDtos, ownerId);
+                log.info("Lote enviado a Kafka exitosamente - BatchId: {}, Owner: {}", batchId, ownerId);
+
+                // Retornar lista vacía para indicar procesamiento asíncrono
+                // El controlador maneje la respuesta
+                return new ArrayList<>();
+
+            } catch (Exception e) {
+                log.error("Error enviando lote a Kafka - Owner: {}, Error: {}", ownerId, e.getMessage(), e);
+                throw new RuntimeException("Error al procesar lote de clientes de forma asíncrona: " + e.getMessage());
+            }
         }
-        validateClientBatch(clientDtos, ownerId);
 
         LocalDateTime batchTime = LocalDateTime.now();
         List<Client> createdClients = new ArrayList<>();
@@ -117,6 +138,7 @@ public class ClientServiceImpl implements ClientService {
                 throw new RuntimeException("Error al guardar cliente: " + client.getNombre() + " " + client.getApellido() + ". " + e.getMessage());
             }
         }
+        log.info("Lote procesado sincrónicamente - Owner: {}, Clientes guardados: {}", ownerId, createdClients.size());
         return createdClients;
     }
 
