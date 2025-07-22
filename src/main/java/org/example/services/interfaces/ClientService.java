@@ -30,4 +30,7 @@ public interface ClientService {
 
     // EXIST
     boolean existsByParticularIdAndOwnerId(Integer particularId, Long ownerId);
+
+    // CARGA DE CLIENTES UTILIZADO POR CONSUMER
+    List<Client> createClientBatchDirect(List<ClientInputDto> clientDtos, Long ownerId);
 }

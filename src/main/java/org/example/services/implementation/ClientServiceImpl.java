@@ -206,4 +206,30 @@ public class ClientServiceImpl implements ClientService {
         validateOwnerId(ownerId);
         return clientRepository.getClientId(ownerId, particularId).isPresent();
     }
+
+    // Método UNICAMENTE PARA CONSUMER
+    @Transactional(rollbackFor = Exception.class)
+    public List<Client> createClientBatchDirect(List<ClientInputDto> clientDtos, Long ownerId) {
+        validateClientBatch(clientDtos, ownerId);
+
+        LocalDateTime batchTime = LocalDateTime.now();
+        List<Client> createdClients = new ArrayList<>();
+
+        for (ClientInputDto clientDto : clientDtos) {
+            Client client = mapClientDtoInputToClient(clientDto);
+            client.setOwnerId(ownerId);
+            client.setFechaCreacion(batchTime);
+            client.setActivo(true);
+
+            try {
+                Client savedClient = clientRepository.save(client);
+                createdClients.add(savedClient);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al guardar cliente: " + client.getNombre() + " " + client.getApellido() + ". " + e.getMessage());
+            }
+        }
+
+        log.info("Lote procesado directamente - Owner: {}, Clientes guardados: {}", ownerId, createdClients.size());
+        return createdClients;
+    }
 }

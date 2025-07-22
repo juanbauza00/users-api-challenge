@@ -92,7 +92,7 @@ public class ClientBatchConsumerService {
             log.debug("Iniciando procesamiento de {} clientes para owner {}",
                     clientDtos.size(), clientBatch.getOwnerId());
 
-            List<Client> savedClients = clientService.createClientBatch(clientDtos, clientBatch.getOwnerId());
+            List<Client> savedClients = clientService.createClientBatchDirect(clientDtos, clientBatch.getOwnerId());
 
             log.info("Proceso de guardado finalizado - BatchId: {}, Clientes guardados: {}/{}",
                     clientBatch.getBatchId(), savedClients.size(), clientBatch.getTotalClients());
